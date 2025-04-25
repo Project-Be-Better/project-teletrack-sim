@@ -160,13 +160,3 @@ services:
 | Multi-Vehicle Support | Parameterize topic and API per vehicle ID        |
 |                       |                                                  |
 
-| Concept | Note | Link |
-| ------- | ---- | ---- |
-|         |      |      |
-|         |      |      |
-
-| Advantages | Disadvantages |
-| ---------- | ------------- |
-|            |               |
-
-## Note
