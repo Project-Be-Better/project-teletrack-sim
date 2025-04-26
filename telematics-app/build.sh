@@ -51,14 +51,11 @@ CID=$(docker create ${BUILDER_IMAGE})
 docker cp ${CID}:/app/build/compile_commands.json build/compile_commands.json
 docker rm ${CID}
 
-if [ "${RUN_TESTS}" = "true" ]; then
-  echo "🧪 Running tests in builder container…"
-  # Mount the build dir so ctest can see it
-  docker run --rm \
-    -v "${PWD}/build":/app/build \
-    ${BUILDER_IMAGE} \
-    bash -lc "ctest --test-dir /app/build --output-on-failure -C ${BUILD_TYPE}"
-fi
+ if [ "${RUN_TESTS}" = "true" ]; then
+    echo "🧪 Running tests in builder container…"
+    docker run --rm ${BUILDER_IMAGE} \
+      bash -lc "ctest --test-dir /app/build --output-on-failure -C ${BUILD_TYPE}"
+  fi
 
 echo "🔧 Building runtime stage (${RUNTIME_IMAGE})"
 docker build $NO_CACHE \
