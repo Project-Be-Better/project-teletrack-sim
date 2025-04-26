@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# On Git-Bash / MSYS, disable automatic path conversion for docker run
+export MSYS_NO_PATHCONV=1
+
 show_help() {
   cat <<EOF
 Usage: ./build.sh [options]
 
-Script to build the TeleTrack Simulator via Docker, extract compile_commands.json, and run tests.
+Script to build the TeleTrack Simulator via Docker, extract compile_commands.json,
+run tests, and optionally run the simulator.
 
 Options:
   -h, --help        Display this help message
   -c, --clean       Force a fresh rebuild (no Docker cache)
-  -t, --test        Run tests after building (default collects only compile_commands.json)
+  -t, --test        Run tests inside container (default)
   --skip-test       Skip tests
   -d, --debug       Build in Debug mode (default Release)
   -r, --run         After building, run the simulator in a container
@@ -51,11 +55,13 @@ CID=$(docker create ${BUILDER_IMAGE})
 docker cp ${CID}:/app/build/compile_commands.json build/compile_commands.json
 docker rm ${CID}
 
- if [ "${RUN_TESTS}" = "true" ]; then
-    echo "🧪 Running tests in builder container…"
-    docker run --rm ${BUILDER_IMAGE} \
-      bash -lc "ctest --test-dir /app/build --output-on-failure -C ${BUILD_TYPE}"
-  fi
+if [ "${RUN_TESTS}" = "true" ]; then
+  echo "🧪 Running tests in builder container…"
+  docker run --rm \
+    --workdir=/app/build \
+    ${BUILDER_IMAGE} \
+    ctest --output-on-failure -C ${BUILD_TYPE}
+fi
 
 echo "🔧 Building runtime stage (${RUNTIME_IMAGE})"
 docker build $NO_CACHE \
